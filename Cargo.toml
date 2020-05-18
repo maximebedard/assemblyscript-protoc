@@ -1,0 +1,11 @@
+[package]
+name = "assemblyscript-protoc"
+version = "0.1.0"
+authors = ["Maxime Bedard <maxime.bedard@shopify.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+protobuf = { version = "2", features = ["with-bytes"] }
+inflections = { version = "1.1" }

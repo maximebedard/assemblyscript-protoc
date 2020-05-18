@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+message PrimitivesTest {
+  double   a = 1;
+  float    b = 2;
+  int32    c = 3;
+  int64    d = 4;
+  uint32   e = 5;
+  uint64   f = 6;
+  sint32   g = 7;
+  sint64   h = 8;
+  fixed32  i = 9;
+  fixed64  j = 10;
+  sfixed32 k = 11;
+  sfixed64 l = 12;
+  bool     m = 13;
+  string   n = 14;
+  bytes    o = 15;
+}
+
+message RepeatedTest {
+  repeated int32 i = 1;
+}
+
+message NestingTest {
+  message OuterA {
+    message Inner {
+      int64 i = 1;
+    }
+  }
+  message OuterB {
+    message Inner {
+      int32 i = 1;
+    }
+  }
+}
+
+message Project {
+  int32 a = 1;
+}
+
+message OneOfTest {
+  oneof test_oneof {
+    string name = 4;
+    Project sub_message = 9;
+  }
+}
+
+message MapTest {
+  map<string, string> projects = 3;
+}
+
+message MapNestedValueTypeTest {
+  map<string, Project> projects = 3;
+}
+
+enum EnumTest {
+  A = 0;
+  B = 1;
+}
+
+message NestedEnumTest {
+  enum InnerEnum {
+    C = 0;
+    D = 1;
+  }
+  InnerEnum inner = 1;
+}
+
