@@ -1,64 +1,64 @@
 class PrimitivesTest {
-  private a: f64;
-  private b: f32;
-  private c: i32;
-  private d: i64;
-  private e: u32;
-  private f: u64;
-  private g: i32;
-  private h: i64;
-  private i: u32;
-  private j: u64;
-  private k: i32;
-  private l: i64;
-  private m: bool;
-  private n: string;
-  private o: bool;
+  private a: f64 | null;
+  private b: f32 | null;
+  private c: i32 | null;
+  private d: i64 | null;
+  private e: u32 | null;
+  private f: u64 | null;
+  private g: i32 | null;
+  private h: i64 | null;
+  private i: u32 | null;
+  private j: u64 | null;
+  private k: i32 | null;
+  private l: i64 | null;
+  private m: bool | null;
+  private n: string | null;
+  private o: bool | null;
 
-  geta(): f64 { return this.a; }
-  seta(v: f64) { this.a = v; }
+  geta(): f64 | null { return this.a; }
+  seta(v: f64 | null) { this.a = v; }
 
-  getb(): f32 { return this.b; }
-  setb(v: f32) { this.b = v; }
+  getb(): f32 | null { return this.b; }
+  setb(v: f32 | null) { this.b = v; }
 
-  getc(): i32 { return this.c; }
-  setc(v: i32) { this.c = v; }
+  getc(): i32 | null { return this.c; }
+  setc(v: i32 | null) { this.c = v; }
 
-  getd(): i64 { return this.d; }
-  setd(v: i64) { this.d = v; }
+  getd(): i64 | null { return this.d; }
+  setd(v: i64 | null) { this.d = v; }
 
-  gete(): u32 { return this.e; }
-  sete(v: u32) { this.e = v; }
+  gete(): u32 | null { return this.e; }
+  sete(v: u32 | null) { this.e = v; }
 
-  getf(): u64 { return this.f; }
-  setf(v: u64) { this.f = v; }
+  getf(): u64 | null { return this.f; }
+  setf(v: u64 | null) { this.f = v; }
 
-  getg(): i32 { return this.g; }
-  setg(v: i32) { this.g = v; }
+  getg(): i32 | null { return this.g; }
+  setg(v: i32 | null) { this.g = v; }
 
-  geth(): i64 { return this.h; }
-  seth(v: i64) { this.h = v; }
+  geth(): i64 | null { return this.h; }
+  seth(v: i64 | null) { this.h = v; }
 
-  geti(): u32 { return this.i; }
-  seti(v: u32) { this.i = v; }
+  geti(): u32 | null { return this.i; }
+  seti(v: u32 | null) { this.i = v; }
 
-  getj(): u64 { return this.j; }
-  setj(v: u64) { this.j = v; }
+  getj(): u64 | null { return this.j; }
+  setj(v: u64 | null) { this.j = v; }
 
-  getk(): i32 { return this.k; }
-  setk(v: i32) { this.k = v; }
+  getk(): i32 | null { return this.k; }
+  setk(v: i32 | null) { this.k = v; }
 
-  getl(): i64 { return this.l; }
-  setl(v: i64) { this.l = v; }
+  getl(): i64 | null { return this.l; }
+  setl(v: i64 | null) { this.l = v; }
 
-  getm(): bool { return this.m; }
-  setm(v: bool) { this.m = v; }
+  getm(): bool | null { return this.m; }
+  setm(v: bool | null) { this.m = v; }
 
-  getn(): string { return this.n; }
-  setn(v: string) { this.n = v; }
+  getn(): string | null { return this.n; }
+  setn(v: string | null) { this.n = v; }
 
-  geto(): bool { return this.o; }
-  seto(v: bool) { this.o = v; }
+  geto(): bool | null { return this.o; }
+  seto(v: bool | null) { this.o = v; }
 
 }
 
@@ -75,19 +75,19 @@ class NestingTest {
 }
 
 class Project {
-  private a: i32;
+  private a: i32 | null;
 
-  geta(): i32 { return this.a; }
-  seta(v: i32) { this.a = v; }
+  geta(): i32 | null { return this.a; }
+  seta(v: i32 | null) { this.a = v; }
 
 }
 
 class OneOfTest {
-  private name: string;
+  private name: string | null;
   private sub_message: .Project | null;
 
-  getname(): string { return this.name; }
-  setname(v: string) { this.name = v; }
+  getname(): string | null { return this.name; }
+  setname(v: string | null) { this.name = v; }
 
   getsub_message(): .Project | null { return this.sub_message; }
   setsub_message(v: .Project | null) { this.sub_message = v; }
@@ -95,18 +95,18 @@ class OneOfTest {
 }
 
 class MapTest {
-  private projects: Map<string, string>;
+  private projects: Map<string | null, string | null>;
 
-  getprojects(): Map<string, string> { return this.projects; }
-  setprojects(v: Map<string, string>) { this.projects = v; }
+  getprojects(): Map<string | null, string | null> { return this.projects; }
+  setprojects(v: Map<string | null, string | null>) { this.projects = v; }
 
 }
 
 class MapNestedValueTypeTest {
-  private projects: Map<string, .Project | null>;
+  private projects: Map<string | null, .Project | null>;
 
-  getprojects(): Map<string, .Project | null> { return this.projects; }
-  setprojects(v: Map<string, .Project | null>) { this.projects = v; }
+  getprojects(): Map<string | null, .Project | null> { return this.projects; }
+  setprojects(v: Map<string | null, .Project | null>) { this.projects = v; }
 
 }
 

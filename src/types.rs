@@ -44,6 +44,25 @@ impl AssemblyscriptUdt {
   pub fn fields(&self) -> Iter<AssemblyscriptField> {
     self.fields.iter()
   }
+
+  pub fn default_value() -> &str {
+    match self.t {
+      AssemblyscriptType::I32 => "",
+      AssemblyscriptType::U32 => "",
+      AssemblyscriptType::I64 => "",
+      AssemblyscriptType::U64 => "",
+      AssemblyscriptType::F32 => "",
+      AssemblyscriptType::F64 => "",
+      AssemblyscriptType::Boolean => "",
+      AssemblyscriptType::String => "",
+      AssemblyscriptType::Map { .. } => "",
+      AssemblyscriptType::Array { .. } => "",
+      AssemblyscriptType::Udt { inner: AssemblyscriptUdt } => "",
+      AssemblyscriptType::Enum { inner: AssemblyscriptEnum } => "",
+      AssemblyscriptType::Optional { value_type: Box<Self> } => "",
+      AssemblyscriptType::Ref { name: String, } => "",
+    }
+  }
 }
 
 impl From<&DescriptorProto> for AssemblyscriptUdt {
