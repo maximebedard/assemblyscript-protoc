@@ -1,1 +1,5 @@
-protoc --plugin=protoc-gen-assemblyscript=./target/debug/assemblyscript-protoc --assemblyscript_out=./tests/out ./tests/kitchen-sink.proto
+# as-protobuf
+
+WIP project that includes a protoc plugin to generate assemblyscript code, and as-protobuf which exposes a Serializer and a Deserializer.
+
+

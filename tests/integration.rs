@@ -4,6 +4,7 @@ mod tests {
 
   #[test]
   fn test_kitchen_sink() {
+    // protoc --plugin=protoc-gen-assemblyscript=./target/debug/assemblyscript-protoc --assemblyscript_out=./tests/out ./tests/kitchen-sink.proto
     let output = Command::new("protoc")
       .arg(format!("--plugin=protoc-gen-assemblyscript={}", env!("CARGO_BIN_EXE_assemblyscript-protoc")))
       .arg("--assemblyscript_out=tests/kitchen-sink/assembly/proto")
