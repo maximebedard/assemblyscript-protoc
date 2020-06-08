@@ -136,6 +136,8 @@ export class Writer {
   writeFloatField(fieldNumber: u32, v: f32): void {}
   writeDoubleField(fieldNumber: u32, v: f64): void {}
   writeBoolField(fieldNumber: u32, v: bool): void {}
+  writeStringField(fieldNumber: u32, v: string): void {}
+  writeBytesField(fieldNumber: u32, v: Array<u8>): void {}
 }
 
 function encodeZigZag32(v: i32): u32 {

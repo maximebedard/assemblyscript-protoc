@@ -10,7 +10,7 @@ export class Reader {
     this._pos = 0;
   }
 
-  static fromByteArray(bytes: Array<u8>): Reader {
+  static fromBytes(bytes: Array<u8>): Reader {
     const view = new DataView(bytes.buffer, 0, bytes.length);
     return new Reader(view);
   }
