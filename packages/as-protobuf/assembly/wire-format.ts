@@ -12,7 +12,9 @@ export enum WireType {
 }
 
 export function tryWireTypeFromU32(v: u32): WireType {
-  assert(v <= 5);
+  assert(v <= 5, "Invalid wire type.");
+  assert(v != 3, "StartGroup type is not supported.");
+  assert(v != 4, "EndGroup type is not supported.");
   return v as WireType;
 }
 
@@ -21,17 +23,26 @@ export class Tag {
   private readonly _wireType : WireType;
 
   constructor(fieldNumber: u32, wireType: WireType) {
-    assert(fieldNumber > 0 && fieldNumber <= FIELD_NUMBER_MAX);
+    assert(fieldNumber > 0 && fieldNumber <= FIELD_NUMBER_MAX, "Invalid fieldNumber.");
     this._fieldNumber = fieldNumber;
     this._wireType = wireType;
   }
 
   static tryFromU32(v: u32): Tag {
-    let wireType = tryWireTypeFromU32(value & TAG_TYPE_MASK);
-    let fieldNumber = value >> TAG_TYPE_BITS;
+    let wireType = tryWireTypeFromU32(v & TAG_TYPE_MASK);
+    let fieldNumber = v >> TAG_TYPE_BITS;
     return new Tag(fieldNumber, wireType);
+  }
+
+  value(): u32 {
+    return (this.fieldNumber << TAG_TYPE_BITS) | (this.wireType as u32);
   }
 
   get fieldNumber(): u32 { return this._fieldNumber; }
   get wireType(): WireType { return this._wireType; }
+
+  @operator("==")
+  __eq(rhs: Tag): bool {
+    return this.value() == rhs.value();
+  }
 }

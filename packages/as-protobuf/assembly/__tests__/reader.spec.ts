@@ -1,9 +1,9 @@
-import { Reader } from "../reader";
+import { Reader, WireType, UnknownValue } from "../";
 
 describe("Reader", () => {
-  it("readUint8", () => {
+  it("readByte", () => {
     const reader = Reader.fromByteArray([0x17]);
-    expect<u8>(reader.readUint8()).toBe(23);
+    expect<u8>(reader.readByte()).toBe(23);
     expect<bool>(reader.eof()).toBe(true);
   });
 
@@ -44,6 +44,11 @@ describe("Reader", () => {
     reader.readVarint64();
   });
 
+  itThrows("readVarint64 unexpected eof", () => {
+    let reader = Reader.fromByteArray([0x96, 0x97])
+    reader.readVarint64();
+  });
+
   itThrows("readVarint32 malformed", () => {
     let reader = Reader.fromByteArray([0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01]);
     reader.readVarint32();
@@ -81,6 +86,16 @@ describe("Reader", () => {
     expect<bool>(reader.readBool()).toBe(true);
   });
 
+  it("readFixed32", () => {
+    let reader = Reader.fromByteArray([]);
+    expect<u32>(reader.readFixed32()).toBe(1);
+  });
+
+  it("readFixed64", () => {
+    let reader = Reader.fromByteArray([]);
+    expect<u64>(reader.readFixed64()).toBe(1);
+  });
+
   it("readSint32", () => {
     let reader = Reader.fromByteArray([]);
     expect<i32>(reader.readSint32()).toBe(1);
@@ -103,7 +118,7 @@ describe("Reader", () => {
 
   it("readRepeatedPackedInt32", () => {
     let reader = Reader.fromByteArray([]);
-    expect<i64[]>(reader.readRepeatedPackedInt32()).toBe([1]);
+    expect<i32[]>(reader.readRepeatedPackedInt32()).toBe([1]);
   });
 
   it("readRepeatedPackedInt64", () => {
@@ -154,5 +169,35 @@ describe("Reader", () => {
   it("readRepeatedPackedBool", () => {
     let reader = Reader.fromByteArray([]);
     expect<bool[]>(reader.readRepeatedPackedBool()).toBe([1]);
+  });
+
+  it("readUnknown fixed32", () => {
+    let reader = Reader.fromByteArray([]);
+    expect<UnknownValue>(reader.readUnknown(WireType.Fixed32))
+      .toBe(UnknownValue.fixed32(1));
+  });
+
+  it("readUnknown fixed64", () => {
+    let reader = Reader.fromByteArray([]);
+    expect<UnknownValue>(reader.readUnknown(WireType.Fixed64))
+      .toBe(UnknownValue.fixed64(1));
+  });
+
+  it("readUnknown varint", () => {
+    let reader = Reader.fromByteArray([]);
+    expect<UnknownValue>(reader.readUnknown(WireType.Varint))
+      .toBe(UnknownValue.varint(1));
+  });
+
+  it("readUnknown length delimited", () => {
+    let reader = Reader.fromByteArray([]);
+    expect<UnknownValue>(reader.readUnknown(WireType.LengthDelimited))
+      .toBe(UnknownValue.lengthDelimited([0x01]));
+  });
+
+  it("readUnknown not supported", () => {
+    let reader = Reader.fromByteArray([]);
+    expect<UnknownValue>(reader.readUnknown(WireType.StartGroup))
+      .toBe(UnknownValue.lengthDelimited([0x01]));
   });
 });
