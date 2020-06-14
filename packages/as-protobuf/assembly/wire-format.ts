@@ -28,13 +28,29 @@ export class Tag {
     this._wireType = wireType;
   }
 
+  static fixed32(fieldNumber: u32): Tag {
+    return new Tag(fieldNumber, WireType.Fixed32);
+  }
+
+  static fixed64(fieldNumber: u32): Tag {
+    return new Tag(fieldNumber, WireType.Fixed64);
+  }
+
+  static varint(fieldNumber: u32): Tag {
+    return new Tag(fieldNumber, WireType.Varint);
+  }
+
+  static lengthDelimited(fieldNumber: u32): Tag {
+    return new Tag(fieldNumber, WireType.LengthDelimited);
+  }
+
   static tryFromU32(v: u32): Tag {
     let wireType = tryWireTypeFromU32(v & TAG_TYPE_MASK);
     let fieldNumber = v >> TAG_TYPE_BITS;
     return new Tag(fieldNumber, wireType);
   }
 
-  value(): u32 {
+  asU32(): u32 {
     return (this.fieldNumber << TAG_TYPE_BITS) | (this.wireType as u32);
   }
 
@@ -43,6 +59,6 @@ export class Tag {
 
   @operator("==")
   __eq(rhs: Tag): bool {
-    return this.value() == rhs.value();
+    return this.asU32() == rhs.asU32();
   }
 }

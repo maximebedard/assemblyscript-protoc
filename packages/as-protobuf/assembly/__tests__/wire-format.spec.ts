@@ -37,8 +37,8 @@ describe("Tag.tryFromU32", () => {
 });
 
 describe("Tag", () => {
-  it("value returns encoded as a u32", () => {
+  it("asU32 returns encoded as a u32", () => {
     const tag = new Tag(1, WireType.Fixed32);
-    expect<u32>(tag.value()).toBe(13);
+    expect<u32>(tag.asU32()).toBe(13);
   });
 })

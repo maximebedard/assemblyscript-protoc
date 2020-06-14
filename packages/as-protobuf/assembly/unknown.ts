@@ -37,7 +37,7 @@ export class UnknownValue {
     return new UnknownValue(UnknownValueType.Varint, null, new Box(v), null);
   }
 
-  static lengthDelimited(v: u8[]): UnknownValue {
+  static lengthDelimited(v: Array<u8>): UnknownValue {
     return new UnknownValue(UnknownValueType.LengthDelimited, null, null, v);
   }
 
@@ -55,7 +55,7 @@ export class UnknownValue {
     return this._u64!.inner;
   }
 
-  asBytes(): u8[] {
+  asBytes(): Array<u8> {
     assert(this._type == UnknownValueType.LengthDelimited);
     return this._bytes!;
   }

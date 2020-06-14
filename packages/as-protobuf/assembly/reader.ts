@@ -1,7 +1,8 @@
 import { WireType, Tag } from "./wire-format";
 import { UnknownValue } from "./unknown";
+import { decodeZigZag32, decodeZigZag64 } from "./zig-zag";
 
-export class Reader {
+export class InputStream {
   private readonly _view: DataView;
   private _pos: i32;
 
@@ -10,9 +11,14 @@ export class Reader {
     this._pos = 0;
   }
 
-  static fromBytes(bytes: Array<u8>): Reader {
+  static fromArrayBuffer(buffer: ArrayBuffer): InputStream {
+    const view = new DataView(buffer, 0, buffer.byteLength / 4);
+    return new InputStream(view);
+  }
+
+  static fromBytes(bytes: Array<u8>): InputStream {
     const view = new DataView(bytes.buffer, 0, bytes.length);
-    return new Reader(view);
+    return new InputStream(view);
   }
 
   eof(): bool {
@@ -125,65 +131,330 @@ export class Reader {
     return Tag.tryFromU32(this.readVarint32());
   }
 
-  private readRepeatedPackedFixed<T>(size: u32, read: (r: Reader) => T): Array<T> {
+  private readRepeatedPackedFixed<T>(size: u32, dest: Array<T>, f: (is: InputStream) => T): Array<T> {
     return [];
   }
 
-  private readRepeatedPacked<T>(size: u32, read: (r: Reader) => T): Array<T> {
+  private readRepeatedPacked<T>(size: u32, dest: Array<T>, f: (is: InputStream) => T): Array<T> {
     return [];
   }
 
-  readRepeatedPackedInt32(): Array<i32> {
-    return this.readRepeatedPacked<i32>(4, (r: Reader) => { return r.readInt32(); });
+  readRepeatedInt32Into(dest: Array<i32>): void {
+    this.readRepeatedPacked<i32>(4, dest, (is: InputStream) => is.readInt32());
   }
 
-  readRepeatedPackedInt64(): Array<i64> {
-    return this.readRepeatedPacked<i64>(8, (r: Reader) => { return r.readInt64(); });
+  readRepeatedInt64Into(dest: Array<i64>): void {
+    this.readRepeatedPacked<i64>(8, dest, (is: InputStream) => is.readInt64());
   }
 
-  readRepeatedPackedUint32(): Array<u32> {
-    return this.readRepeatedPacked<u32>(4, (r: Reader) => { return r.readUint32(); });
+  readRepeatedUint32Into(dest: Array<u32>): void {
+    this.readRepeatedPacked<u32>(4, dest, (is: InputStream) => is.readUint32());
   }
 
-  readRepeatedPackedUint64(): Array<u64> {
-    return this.readRepeatedPacked<u64>(8, (r: Reader) => { return r.readUint64(); });
+  readRepeatedUint64Into(dest: Array<u64>): void {
+    this.readRepeatedPacked<u64>(8, dest, (is: InputStream) => is.readUint64());
   }
 
-  readRepeatedPackedSint32(): Array<u32> {
-    return this.readRepeatedPacked<u32>(4, (r: Reader) => { return r.readSint32(); });
+  readRepeatedSint32Into(dest: Array<i32>): void {
+    this.readRepeatedPacked<i32>(4, dest, (is: InputStream) => is.readSint32());
   }
 
-  readRepeatedPackedSint64(): Array<u64> {
-    return this.readRepeatedPacked<u64>(8, (r: Reader) => { return r.readSint64(); });
+  readRepeatedSint64Into(dest: Array<i64>): void {
+    this.readRepeatedPacked<i64>(8, dest, (is: InputStream) => is.readSint64());
   }
 
-  readRepeatedPackedFixed32(): Array<u32> {
-    return this.readRepeatedPackedFixed<u32>(4, (r: Reader) => { return r.readUint32(); });
+  readRepeatedFixed32Into(dest: Array<u32>): void {
+    this.readRepeatedPackedFixed<u32>(4, dest, (is: InputStream) => is.readUint32());
   }
 
-  readRepeatedPackedFixed64(): Array<u64> {
-    return this.readRepeatedPackedFixed<u64>(8, (r: Reader) => { return r.readUint64(); });
+  readRepeatedFixed64Into(dest: Array<u64>): void {
+    this.readRepeatedPackedFixed<u64>(8, dest, (is: InputStream) => is.readUint64());
   }
 
-  readRepeatedPackedSfixed32(): Array<i32> {
-    return this.readRepeatedPackedFixed<i32>(4, (r: Reader) => { return r.readSfixed32(); });
+  readRepeatedSfixed32Into(dest: Array<i32>): void {
+    this.readRepeatedPackedFixed<i32>(4, dest, (is: InputStream) => is.readSfixed32());
   }
 
-  readRepeatedPackedSfixed64(): Array<i64> {
-    return this.readRepeatedPackedFixed<i64>(8, (r: Reader) => { return r.readSfixed64(); });
+  readRepeatedSfixed64Into(dest: Array<i64>): void {
+    this.readRepeatedPackedFixed<i64>(8, dest, (is: InputStream) => is.readSfixed64());
   }
 
-  readRepeatedPackedFloat(): Array<f32> {
-    return this.readRepeatedPackedFixed<f32>(4, (r: Reader) => { return r.readFloat(); });
+  readRepeatedFloatInto(dest: Array<f32>): void {
+    this.readRepeatedPackedFixed<f32>(4, dest, (is: InputStream) => is.readFloat());
   }
 
-  readRepeatedPackedDouble(): Array<f64> {
-    return this.readRepeatedPackedFixed<f64>(8, (r: Reader) => { return r.readDouble(); });
+  readRepeatedDoubleInto(dest: Array<f64>): void {
+    this.readRepeatedPackedFixed<f64>(8, dest, (is: InputStream) => is.readDouble());
   }
 
-  readRepeatedPackedBool(): Array<bool> {
-    return this.readRepeatedPacked<bool>(4, (r: Reader) => { return r.readBool(); });
+  readRepeatedBoolInto(dest: Array<bool>): void {
+    this.readRepeatedPacked<bool>(4, dest, (is: InputStream) => is.readBool());
   }
+
+  // TODO: figure out how to generate code to read {Enum, Message, repeated enums, repeated messages}...
+}
+
+export class Reader {
+  private readonly _is: InputStream;
+
+  constructor(is: InputStream) {
+    this._is = is;
+  }
+
+  eof(): bool {
+    return this._is.eof();
+  }
+
+  readTag(): Tag {
+    return this._is.readTag();
+  }
+
+  readInt32(wireType: WireType): i32 {
+    expectWireType(wireType, WireType.Varint);
+    return this._is.readInt32();
+  }
+
+  readInt64(wireType: WireType): i64 {
+    expectWireType(wireType, WireType.Varint);
+    return this._is.readInt64();
+  }
+
+  readUint32(wireType: WireType): u32 {
+    expectWireType(wireType, WireType.Varint);
+    return this._is.readUint32();
+  }
+
+  readUint64(wireType: WireType): u64 {
+    expectWireType(wireType, WireType.Varint);
+    return this._is.readUint64();
+  }
+
+  readSint32(wireType: WireType): i32 {
+    expectWireType(wireType, WireType.Varint);
+    return this._is.readSint32();
+  }
+
+  readSint64(wireType: WireType): i64 {
+    expectWireType(wireType, WireType.Varint);
+    return this._is.readSint64();
+  }
+
+  readFixed32(wireType: WireType): u32 {
+    expectWireType(wireType, WireType.Fixed32);
+    return this._is.readFixed32();
+  }
+
+  readFixed64(wireType: WireType): u64 {
+    expectWireType(wireType, WireType.Fixed64);
+    return this._is.readFixed64();
+  }
+
+  readSfixed32(wireType: WireType): i32 {
+    expectWireType(wireType, WireType.Fixed32);
+    return this._is.readSfixed32();
+  }
+
+  readSfixed64(wireType: WireType): i64 {
+    expectWireType(wireType, WireType.Fixed64);
+    return this._is.readSfixed64();
+  }
+
+  readFloat(wireType: WireType): f32 {
+    expectWireType(wireType, WireType.Fixed32);
+    return this._is.readFloat();
+  }
+
+  readDouble(wireType: WireType): f64 {
+    expectWireType(wireType, WireType.Fixed64);
+    return this._is.readDouble();
+  }
+
+  readBool(wireType: WireType): bool {
+    expectWireType(wireType, WireType.Varint);
+    return this._is.readBool();
+  }
+
+  readString(wireType: WireType): string {
+    return "";
+  }
+
+  readBytes(wireType: WireType): Array<u8> {
+    return [];
+  }
+
+  readRepeatedInt32Into(wireType: WireType, dest: Array<i32>): void {
+    switch (wireType) {
+      case WireType.LengthDelimited:
+        this._is.readRepeatedInt32Into(dest);
+        break;
+      case WireType.Varint:
+        dest.push(this._is.readInt32());
+        break;
+      default:
+        unexpectedWireType(wireType);
+        break;
+    }
+  }
+
+  readRepeatedInt64Into(wireType: WireType, dest: Array<i64>): void {
+    switch (wireType) {
+      case WireType.LengthDelimited:
+        this._is.readRepeatedInt64Into(dest);
+        break;
+      case WireType.Varint:
+        dest.push(this._is.readInt64());
+        break;
+      default:
+        unexpectedWireType(wireType);
+        break;
+    }
+  }
+
+  readRepeatedUint32Into(wireType: WireType, dest: Array<u32>): void {
+    switch (wireType) {
+      case WireType.LengthDelimited:
+        this._is.readRepeatedUint32Into(dest);
+        break;
+      case WireType.Varint:
+        dest.push(this._is.readUint32());
+        break;
+      default:
+        unexpectedWireType(wireType);
+        break;
+    }
+  }
+
+  readRepeatedUint64Into(wireType: WireType, dest: Array<u64>): void {
+    switch (wireType) {
+      case WireType.LengthDelimited:
+        this._is.readRepeatedUint64Into(dest);
+        break;
+      case WireType.Varint:
+        dest.push(this._is.readUint64());
+        break;
+      default:
+        unexpectedWireType(wireType);
+        break;
+    }
+  }
+
+  readRepeatedSint32Into(wireType: WireType, dest: Array<i32>): void {
+    switch (wireType) {
+      case WireType.LengthDelimited:
+        this._is.readRepeatedSint32Into(dest);
+        break;
+      case WireType.Varint:
+        dest.push(this._is.readSint32());
+        break;
+      default:
+        unexpectedWireType(wireType);
+        break;
+    }
+  }
+
+  readRepeatedSint64Into(wireType: WireType, dest: Array<i64>): void {
+    switch (wireType) {
+      case WireType.LengthDelimited:
+        this._is.readRepeatedSint64Into(dest);
+        break;
+      case WireType.Varint:
+        dest.push(this._is.readSint64());
+        break;
+      default:
+        unexpectedWireType(wireType);
+        break;
+    }
+  }
+
+  readRepeatedFixed32Into(wireType: WireType, dest: Array<u32>): void {
+    switch (wireType) {
+      case WireType.LengthDelimited:
+        this._is.readRepeatedFixed32Into(dest);
+        break;
+      case WireType.Fixed32:
+        dest.push(this._is.readFixed32());
+        break;
+      default:
+        unexpectedWireType(wireType);
+        break;
+    }
+  }
+
+  readRepeatedFixed64Into(wireType: WireType, dest: Array<u64>): void {
+    switch (wireType) {
+      case WireType.LengthDelimited:
+        this._is.readRepeatedFixed64Into(dest);
+        break;
+      case WireType.Fixed64:
+        dest.push(this._is.readFixed64());
+        break;
+      default:
+        unexpectedWireType(wireType);
+        break;
+    }
+  }
+
+  readRepeatedSfixed32Into(wireType: WireType, dest: Array<i32>): void {
+    switch (wireType) {
+      case WireType.LengthDelimited:
+        this._is.readRepeatedSfixed32Into(dest);
+        break;
+      case WireType.Fixed32:
+        dest.push(this._is.readSfixed32());
+        break;
+      default:
+        unexpectedWireType(wireType);
+        break;
+    }
+  }
+
+  readRepeatedSfixed64Into(wireType: WireType, dest: Array<i64>): void {
+    switch (wireType) {
+      case WireType.LengthDelimited:
+        this._is.readRepeatedSfixed64Into(dest);
+        break;
+      case WireType.Fixed64:
+        dest.push(this._is.readSfixed64());
+        break;
+      default:
+        unexpectedWireType(wireType);
+        break;
+    }
+  }
+
+  readRepeatedFloatInto(wireType: WireType, dest: Array<f32>): void {
+    switch (wireType) {
+      case WireType.LengthDelimited:
+        this._is.readRepeatedFloatInto(dest);
+        break;
+      case WireType.Fixed32:
+        dest.push(this._is.readFloat());
+        break;
+      default:
+        unexpectedWireType(wireType);
+        break;
+    }
+  }
+
+  readRepeatedDoubleInto(wireType: WireType, dest: Array<f64>): void {
+    switch (wireType) {
+      case WireType.LengthDelimited:
+        this._is.readRepeatedDoubleInto(dest);
+        break;
+      case WireType.Fixed64:
+        dest.push(this._is.readDouble());
+        break;
+      default:
+        unexpectedWireType(wireType);
+        break;
+    }
+  }
+
+  readRepeatedBoolInto(wireType: WireType, dest: Array<bool>): void {}
+
+  readRepeatedStringInto(wireType: WireType, dest: Array<string>): void {}
+
+  readRepeatedBytesInto(wireType: WireType, dest: Array<Array<u8>>): void {}
 
   readUnknown(wireType: WireType): UnknownValue {
     switch (wireType) {
@@ -202,13 +473,32 @@ export class Reader {
     }
   }
 
-  // TODO: figure out how to generate code to read {Enum, Message, repeated enums, repeated messages}...
+  skipGroup(): void {
+    while (!this.eof()) {
+      const tag = this.readTag();
+      if (tag.wireType == WireType.EndGroup) {
+        return;
+      }
+
+      this.skipField(tag.wireType);
+    }
+  }
+
+  skipField(wireType: WireType): void {
+    this.readUnknown(wireType);
+  }
+
+  skipRawBytes(len: u32): void {
+    this.readRawBytes(len);
+  }
 }
 
-function decodeZigZag64(v: u64): i64 {
-  return ((v >> 1) as i64) ^ (-((v & 1) as i64));
+function unexpectedWireType(wireType: WireType): void {
+  throw new Error(`unexpected ${wireType}`);
 }
 
-function decodeZigZag32(v: u32): i32 {
-  return ((v >> 1) as i32) ^ (-((v & 1) as i32));
+function expectWireType(expected: WireType, actual: WireType): void {
+  if (expected != actual) {
+    throw new Error(`expected ${expected}, got ${actual}`);
+  }
 }
